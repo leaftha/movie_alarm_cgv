@@ -1,9 +1,11 @@
 import requests
+import telepot
 from telegram.ext import Updater, CommandHandler
 from bs4 import BeautifulSoup
 from datetime import datetime
 
 TOKEN = '1018659286:AAFcAg5VqnM_miAWgijd0v3Iybu7cBmb9Vo'
+
 
 def check_id(bot, update):
     try:
@@ -47,14 +49,30 @@ def movie_commad(bot, update):
 
 def help_commad(bot, update):
     id = check_id(bot,update)
-    bot.sendMessage(chat_id=id ,text="지금까지의 명려어 \n /start \n /movie \n 가 구현되었습니다.")
+    bot.sendMessage(chat_id=id ,text="지금까지의 명려어 \n /start \n /movie \n /input \n /list \n 가 구현되었습니다.")
+
+
+def input_commad(bot, update):
+    id = check_id(bot,update)
+    global msg
+    msg = update.message.text.split()
+    del msg[0]
+    bot.sendMessage(chat_id=id ,text=msg)
+    return msg
+
+def list_commad(bot, update):
+    id = check_id(bot, update)
+    for i in msg:
+        bot.sendMessage(chat_id=id, text=i)
+
 
 updater = Updater(TOKEN)
 
 updater.dispatcher.add_handler(CommandHandler('start', start_command))
 updater.dispatcher.add_handler(CommandHandler('movie', movie_commad))
 updater.dispatcher.add_handler(CommandHandler('help', help_commad))
-
+updater.dispatcher.add_handler(CommandHandler('input', input_commad))
+updater.dispatcher.add_handler(CommandHandler('list', list_commad))
 
 updater.start_polling(poll_interval=0.0,
                           timeout=10,
