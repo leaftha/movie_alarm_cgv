@@ -65,64 +65,73 @@ def list_command(bot, update):
     for i in msg:
         bot.sendMessage(chat_id=id, text=i)
 
-def cmd_task_buttons(bot, update):
+def check_command(bot, update):
     id = check_id(bot, update)
-    bot.send_message(chat_id=id, text="작동2")
+
     for i in range(len(msg)):
-        task_buttons = [[InlineKeyboardButton(msg[i], callback_data=i + 1)]]
+        global count
+        count = i + 1
+        a = str(count)
+        message = '제' + a + '번 할일 입니다.'
+        task_buttons = [[InlineKeyboardButton(msg[i], callback_data=count)]]
         reply_markup = InlineKeyboardMarkup(task_buttons)
         bot.send_message(
             chat_id=id
-            , text= i+1
+            , text= message
             , reply_markup=reply_markup
         )
 
 
-# def cb_button(bot, update):
-#     query = update.callback_query
-#     data = query.data
-#
-#     bot.send_chat_action(
-#         chat_id=update.effective_user.id
-#         , action=ChatAction.TYPING
-#     )
-#
-#     if data == '3':
-#         bot.edit_message_text(
-#             text='작업이 취소되었습니다.'
-#             , chat_id=query.message.chat_id
-#             , message_id=query.message.message_id
-#         )
-#     else:
-#         bot.edit_message_text(
-#             text='[{}] 작업이 진행중입니다.'.format(data)
-#             , chat_id=query.message.chat_id
-#             , message_id=query.message.message_id
-#         )
-#
-#         if data == '1':
-#             crawl_navernews()
-#         elif data == '2':
-#             crawl_zigbang()
-#
-#         context.bot.send_message(
-#             chat_id=update.effective_chat.id
-#             , text='[{}] 작업을 완료하였습니다.'.format(data)
-#         )
+def buttoncallback_cammand(bot, update):
+    id = check_id(bot, update)
+    query = update.callback_query
+    data = query.data
+
+    bot.send_chat_action(
+        chat_id=id
+        , action=ChatAction.TYPING
+    )
+    for i in range(1, count):
+        if data == count:
+            bot.sen_message(chat_id=update.callback_query.message.chat_id, text='번 일을 했습니다.', message_id=update.callback_query.message.message_id)
 
 def test_command(bot, update):
     id = check_id(bot, update)
-    bot.send_message(chat_id=id, text="작동2")
+    bot.send_message(chat_id=id, text="작동1")
 
     testlist = ["운동", "과제", "공부"]
     for i in range(len(testlist)):
+        a = str(i+1)
+        message = '제' + a + '번 할일 입니다.'
+        bot.send_message(chat_id=id, text="작동2")
         task_buttons = [[InlineKeyboardButton(testlist[i], callback_data=i + 1)]]
         reply_markup = InlineKeyboardMarkup(task_buttons)
-        bot.sendMessage(
+        bot.send_message(chat_id=id, text="작동3")
+        bot.send_message(
             chat_id=id
-            , text= i+1
+            , text=message
             , reply_markup=reply_markup
         )
+
+def build_button(text_list, callback_header = "") : # make button list
+    button_list = []
+    text_header = callback_header
+    if callback_header != "" :
+        text_header += ","
+
+    for text in text_list :
+        button_list.append(InlineKeyboardButton(text, callback_data=text_header + text))
+
+    return button_list
+
+def build_menu(buttons, n_cols, header_buttons=None, footer_buttons=None):
+    menu = [buttons[i:i + n_cols] for i in range(0, len(buttons), n_cols)]
+    if header_buttons:
+        menu.insert(0, header_buttons)
+    if footer_buttons:
+        menu.append(footer_buttons)
+    return menu
+
 
 updater = Updater(TOKEN)
 
@@ -131,8 +140,10 @@ updater.dispatcher.add_handler(CommandHandler('movie', movie_command))
 updater.dispatcher.add_handler(CommandHandler('help', help_command))
 updater.dispatcher.add_handler(CommandHandler('input', input_command))
 updater.dispatcher.add_handler(CommandHandler('list', list_command))
-updater.dispatcher.add_handler(CommandHandler('button', cmd_task_buttons))
+updater.dispatcher.add_handler(CommandHandler('check', check_command))
+updater.dispatcher.add_handler(CallbackQueryHandler( buttoncallback_cammand ))
 updater.dispatcher.add_handler(CommandHandler('test', test_command))
+
 
 
 updater.start_polling(poll_interval=0.0,
